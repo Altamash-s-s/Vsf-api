@@ -25,6 +25,7 @@ export default ({ config, db }) => resource({
    * POST create an order with JSON payload compliant with models/order.md
    */
   create (req, res) {
+    console.log('Request-1', req );
     const ajv = new Ajv();
     require('ajv-keywords')(ajv, 'regexp');
 
@@ -42,8 +43,8 @@ export default ({ config, db }) => resource({
     }
     const incomingOrder = { title: 'Incoming order received on ' + new Date() + ' / ' + req.ip, ip: req.ip, agent: req.headers['user-agent'], receivedAt: new Date(), order: req.body }/* parsed using bodyParser.json middleware */
     console.log(JSON.stringify(incomingOrder))
-
-    for (let product of req.body.products) {
+    console.log("request123", req?.body?.newOrder?.products)
+    for (let product of req?.body?.newOrder?.products[0]) {
       let key: { id?: string, sku?: string, priceInclTax?: number, price?: number } = config.tax.calculateServerSide ? { priceInclTax: product.priceInclTax } : { price: product.price }
       if (config.tax.alwaysSyncPlatformPricesOver) {
         key.id = product.id
@@ -77,6 +78,7 @@ export default ({ config, db }) => resource({
       }
     } else {
       const orderProxy = _getProxy(req, config)
+      console.log('Request...', req );
       orderProxy.create(req.body).then((result) => {
         apiStatus(res, result, 200);
       }).catch(err => {
